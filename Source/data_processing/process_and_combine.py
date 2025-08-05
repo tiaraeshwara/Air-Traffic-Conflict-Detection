@@ -38,14 +38,16 @@ def process_all_and_save():
     if not csv_files:
         raise FileNotFoundError(f"No CSV files found in {raw_data_dir}")
 
-    all_dfs = []
+    first_file = True
+    total_rows = 0
     for file in csv_files:
         cleaned_df = clean_and_load_file(file)
-        all_dfs.append(cleaned_df)
+        total_rows += len(cleaned_df)
+        # Write header only for the first file
+        cleaned_df.to_csv(output_file, mode='a', header=first_file, index=False)
+        first_file = False
 
-    combined_df = pd.concat(all_dfs, ignore_index=True)
-    print(f"Total combined cleaned data shape: {combined_df.shape}")
-    combined_df.to_csv(output_file, index=False)
+    print(f"Total combined cleaned data rows: {total_rows}")
     print(f"Saved combined cleaned data to {output_file}")
 
 if __name__ == "__main__":

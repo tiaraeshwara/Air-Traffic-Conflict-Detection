@@ -1,6 +1,10 @@
 import pandas as pd
 import itertools
 import os
+import glob
+
+SEGMENT_DIR = os.path.join(os.path.dirname(__file__), "../../Data/processed_data/segments/")
+PAIRS_DIR = os.path.join(os.path.dirname(__file__), "../../Data/processed_data/pairs/")
 
 def generate_aircraft_pairs(segment_df, time_col='time', ac_id_col='icao24'):
     """
@@ -48,22 +52,22 @@ def generate_aircraft_pairs(segment_df, time_col='time', ac_id_col='icao24'):
     print(f"Total pairs generated: {len(pairs_df)}")
     return pairs_df
 
-# ========== Example Usage ==========
+def proceed_pairgeneration():
+    segment_files = glob.glob(os.path.join(SEGMENT_DIR, '*.csv'))
+    if not segment_files:
+        raise FileNotFoundError(f"No CSV files found in {SEGMENT_DIR}")
+    os.makedirs(PAIRS_DIR, exist_ok=True)
+
+    print(f"Found {len(segment_files)} segment files.")
+
+    for seg_path in segment_files:
+        print(f"Processing segment file: {seg_path}")
+        segment_df = pd.read_csv(seg_path)
+        pairs_df = generate_aircraft_pairs(segment_df, time_col='time', ac_id_col='icao24')
+        seg_filename = os.path.basename(seg_path)
+        out_path = os.path.join(PAIRS_DIR, f"pairs_{seg_filename}")
+        pairs_df.to_csv(out_path, index=False)
+        print(f"Saved aircraft pairs for segment to {out_path}")
+
 if __name__ == "__main__":
-    # Example: process a single segment file
-    SEGMENT_PATH = '../../data/processed/segments/segment_0_1561593600_1561600800.csv'
-    OUT_PATH = '../../data/processed/pairs/pairs_segment_0.csv'
-
-    # Ensure output directory exists
-    os.makedirs(os.path.dirname(OUT_PATH), exist_ok=True)
-
-    # Load segment
-    segment_df = pd.read_csv(SEGMENT_PATH)
-    print(f"Loaded segment: {segment_df.shape}")
-
-    # Generate pair DataFrame
-    pairs_df = generate_aircraft_pairs(segment_df)
-
-    # Save result
-    pairs_df.to_csv(OUT_PATH, index=False)
-    print(f"Saved aircraft pairs for segment to {OUT_PATH}")
+    proceed_pairgeneration()

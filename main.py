@@ -2,8 +2,12 @@ from Source.data_processing.process_and_combine import process_all_and_save
 from Source.data_processing.segment_data import segment_adsb_data
 from Source.data_processing.pair_generate import proceed_pairgeneration
 
+from Source.feature_engineering.feature_engineering import load_and_process_all_pairs
+
 import os
 import pandas as pd
+
+
 
 # Run the cleaning and combining process
 process_all_and_save()
@@ -22,3 +26,10 @@ segments = segment_adsb_data(df_cleaned)
 
 # Pair generation
 proceed_pairgeneration()
+
+#feature engineering
+if __name__ == "__main__":
+    INPUT_PAIRS = 'Data/processed_data/pairs/'
+    OUTPUT_PATH = 'Data/processed_data/features/features_eng.csv'
+
+    load_and_process_all_pairs(INPUT_PAIRS, OUTPUT_PATH)

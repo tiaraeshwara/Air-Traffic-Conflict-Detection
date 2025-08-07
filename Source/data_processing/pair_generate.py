@@ -24,7 +24,7 @@ def generate_aircraft_pairs(segment_df, time_col='time', ac_id_col='icao24'):
     segment_df = segment_df.sort_values([time_col, ac_id_col]).reset_index(drop=True)
     result_rows = []
 
-    # For each unique timestamp (or relax to a rolling interval if appropriate)
+    # For each unique timestamp
     for tstamp, grp in segment_df.groupby(time_col):
         aircrafts = grp[ac_id_col].unique()
         if len(aircrafts) < 2:

@@ -2,6 +2,7 @@ import pandas as pd
 from geographiclib.geodesic import Geodesic
 import numpy as np
 import os
+import glob
 
 
 def compute_relative_features(pairs_df):
@@ -13,41 +14,41 @@ def compute_relative_features(pairs_df):
         pd.DataFrame: The input DataFrame with extra feature columns appended.
     """
     # Convenience aliases
-    A_lat = pairs_df['A_latitude']
-    A_lon = pairs_df['A_longitude']
-    B_lat = pairs_df['B_latitude']
-    B_lon = pairs_df['B_longitude']
+    A_lat = pairs_df['A_lat']
+    A_lon = pairs_df['A_lon']
+    B_lat = pairs_df['B_lat']
+    B_lon = pairs_df['B_lon']
 
     # Horizontal separation (geodesic distance in meters)
     def geo_dist(row):
-        g = Geodesic.WGS84.Inverse(row['A_latitude'], row['A_longitude'],
-                                   row['B_latitude'], row['B_longitude'])
+        g = Geodesic.WGS84.Inverse(row['A_lat'], row['A_lon'],
+                                   row['B_lat'], row['B_lon'])
         return g['s12']
 
     pairs_df['horizontal_sep_m'] = pairs_df.apply(geo_dist, axis=1)
     pairs_df['horizontal_sep_NM'] = pairs_df['horizontal_sep_m'] / 1852.0
 
     # Vertical separation (absolute altitude difference, typically in feet or meters)
-    if 'A_baro_altitude' in pairs_df.columns and 'B_baro_altitude' in pairs_df.columns:
-        pairs_df['vertical_sep_ft'] = (pairs_df['A_baro_altitude'] - pairs_df['B_baro_altitude']).abs()
+    if 'A_baroaltitude' in pairs_df.columns and 'B_baroaltitude' in pairs_df.columns:
+        pairs_df['vertical_sep_ft'] = (pairs_df['A_baroaltitude'] - pairs_df['B_baroaltitude']).abs()
 
     # Heading difference (wrap around 360)
     if 'A_heading' in pairs_df.columns and 'B_heading' in pairs_df.columns:
         diff = (pairs_df['A_heading'] - pairs_df['B_heading']).abs()
         pairs_df['heading_diff_deg'] = diff.apply(lambda x: min(x, 360 - x))
 
-    # Groundspeed difference (absolute value, knots or m/s)
-    if 'A_groundspeed' in pairs_df.columns and 'B_groundspeed' in pairs_df.columns:
-        pairs_df['groundspeed_diff'] = (pairs_df['A_groundspeed'] - pairs_df['B_groundspeed']).abs()
+    # velocity difference (absolute value, knots or m/s)
+    if 'A_velocity' in pairs_df.columns and 'B_velocity' in pairs_df.columns:
+        pairs_df['velocity_diff'] = (pairs_df['A_velocity'] - pairs_df['B_velocity']).abs()
 
     # Vertical rate difference
-    if 'A_vertical_rate' in pairs_df.columns and 'B_vertical_rate' in pairs_df.columns:
-        pairs_df['vertical_rate_diff'] = (pairs_df['A_vertical_rate'] - pairs_df['B_vertical_rate']).abs()
+    if 'A_vertrate' in pairs_df.columns and 'B_vertrate' in pairs_df.columns:
+        pairs_df['vertical_rate_diff'] = (pairs_df['A_vertrate'] - pairs_df['B_vertrate']).abs()
 
-    # Track/course angle between aircraft (direction from A to B)
+    # Track angle between aircraft (direction from A to B)
     def bearing(row):
-        g = Geodesic.WGS84.Inverse(row['A_latitude'], row['A_longitude'],
-                                   row['B_latitude'], row['B_longitude'])
+        g = Geodesic.WGS84.Inverse(row['A_lat'], row['A_lon'],
+                                   row['B_lat'], row['B_lon'])
         return g['azi1']
 
     pairs_df['bearing_A_to_B'] = pairs_df.apply(bearing, axis=1)
@@ -55,27 +56,34 @@ def compute_relative_features(pairs_df):
         diff_course = (pairs_df['A_heading'] - pairs_df['bearing_A_to_B']).abs()
         pairs_df['track_course_diff'] = diff_course.apply(lambda x: min(x, 360 - x))
 
-    # Remove temp columns if desired (bearing), or keep for feature selection
+
     return pairs_df
 
+def load_and_process_all_pairs(input_dir, output_path):
 
-# -------------- Example Usage --------------
+    # Find all pairs CSV files inside input_dir
+    all_files = glob.glob(os.path.join(input_dir, '*.csv'))
+    if not all_files:
+        print(f"No CSV files found in directory {input_dir}")
+        return
 
-if __name__ == "__main__":
-    INPUT_PAIRS = '../../data/processed/pairs/pairs_segment_0.csv'
-    OUTPUT_PATH = '../../data/processed/features/features_segment_0.csv'
-    os.makedirs(os.path.dirname(OUTPUT_PATH), exist_ok=True)
+    all_features = []
 
-    # Load aircraft pairs generated previously
-    pairs_df = pd.read_csv(INPUT_PAIRS)
-    print("Loaded pairs: ", pairs_df.shape)
+    for file_path in sorted(all_files):
+        print(f"Processing file: {file_path}")
+        pairs_df = pd.read_csv(file_path)
+        features_df = compute_relative_features(pairs_df)
+        all_features.append(features_df)
 
-    # Compute engineered features
-    features_df = compute_relative_features(pairs_df)
-    print("Engineered features: ", features_df.shape)
+    # Concatenate all features DataFrames into one
+    combined_features = pd.concat(all_features, ignore_index=True)
+    print(f"Total rows after combining: {len(combined_features)}")
 
-    features_df.to_csv(OUTPUT_PATH, index=False)
-    print(f"Saved engineered features to {OUTPUT_PATH}")
+    # Save combined feature set
+    os.makedirs(os.path.dirname(output_path), exist_ok=True)
+    combined_features.to_csv(output_path, index=False)
 
-    # Preview
-    print(features_df.head())
+    print(f"Saved engineered features to {output_path}")
+    print(combined_features.head())
+
+

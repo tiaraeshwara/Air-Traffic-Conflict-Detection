@@ -1,8 +1,9 @@
-from Source.data_processing.process_and_combine import process_all_and_save
-from Source.data_processing.segment_data import segment_adsb_data
-
 import os
 import pandas as pd
+
+from Source.data_processing.process_and_combine import process_all_and_save
+from Source.data_processing.segment_data import segment_adsb_data
+from Source.data_processing.pair_generate import proceed_pairgeneration
 
 # Run the cleaning and combining process
 process_all_and_save()
@@ -18,3 +19,7 @@ print(f"Loaded cleaned data shape: {df_cleaned.shape}")
 
 # Segment data into 2-hour chunks and save CSV files for each segment
 segments = segment_adsb_data(df_cleaned)
+
+# Pair generation
+proceed_pairgeneration()
+

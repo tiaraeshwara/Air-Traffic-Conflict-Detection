@@ -1,7 +1,20 @@
-from Source.data_processing import *
-from Source.data_processing.load_data import load_all_file, save_processed_data
+from Source.data_processing.process_and_combine import process_all_and_save
+from Source.data_processing.segment_data import segment_adsb_data
 
-df_all = load_all_file('processed_data.csv')
-print(df_all.head())
+import os
+import pandas as pd
 
-#save_processed_data(df_all, 'processed_data.csv')
+# Run the cleaning and combining process
+process_all_and_save()
+
+# Path to the cleaned combined data
+cleaned_file_path = os.path.join(os.path.dirname(__file__), 'Data/processed_data/combined_cleaned.csv')
+if not os.path.exists(cleaned_file_path):
+    raise FileNotFoundError(f"Cleaned combined data file not found at {cleaned_file_path}")
+
+# Load the cleaned data
+df_cleaned = pd.read_csv(cleaned_file_path)
+print(f"Loaded cleaned data shape: {df_cleaned.shape}")
+
+# Segment data into 2-hour chunks and save CSV files for each segment
+segments = segment_adsb_data(df_cleaned)

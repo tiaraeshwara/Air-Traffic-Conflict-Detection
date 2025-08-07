@@ -1,7 +1,9 @@
 import os
+from os.path import exists
+import os
 import pandas as pd
 
-def segment_adsb_data(df, segment_length_sec=7200, timestamp_col='timestamp', save_segments=False):
+def segment_adsb_data(df, segment_length_sec=7200, timestamp_col='time', save_segments=True):
     """
     Split the cleaned ADS-B DataFrame into segments based on fixed time windows.
 
@@ -37,10 +39,11 @@ def segment_adsb_data(df, segment_length_sec=7200, timestamp_col='timestamp', sa
 
         if not segment_df.empty:
             segments[(start_ts, end_ts)] = segment_df
-
             if save_segments:
                 # Prepare output path
-                output_dir = os.path.join(os.path.dirname(__file__), '../../data/processed/segments/')
+                print(f"Saving segment Before {segment_id} from {start_ts} to {end_ts}")
+                output_dir = os.path.join(os.path.dirname(__file__), '../../Data/processed_data/segments/')
+                print(f"Saving segment {segment_id} to {output_dir}")
                 os.makedirs(output_dir, exist_ok=True)
                 file_name = f"segment_{segment_id}_{start_ts}_{end_ts}.csv"
                 output_path = os.path.join(output_dir, file_name)
@@ -58,7 +61,7 @@ def segment_adsb_data(df, segment_length_sec=7200, timestamp_col='timestamp', sa
 # Example usage inside this script (can be removed if importing as a module)
 if __name__ == "__main__":
     # Example: load cleaned combined data produced by your cleaning step
-    cleaned_file_path = os.path.join(os.path.dirname(__file__), '../../data/processed/cleaned_combined.csv')
+    cleaned_file_path = os.path.join(os.path.dirname(__file__), '../../Data/processed_data/combined_cleaned.csv')
     if not os.path.exists(cleaned_file_path):
         raise FileNotFoundError(f"Cleaned combined data file not found at {cleaned_file_path}")
 
@@ -72,6 +75,4 @@ if __name__ == "__main__":
     first_segment_key = list(segments.keys())[0]
     print(f"First segment timestamps: {first_segment_key}")
     print(segments[first_segment_key].head())
-
-
 

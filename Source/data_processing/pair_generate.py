@@ -2,7 +2,7 @@ import pandas as pd
 import itertools
 import os
 
-def generate_aircraft_pairs(segment_df, time_col='timestamp', ac_id_col='icao24'):
+def generate_aircraft_pairs(segment_df, time_col='time', ac_id_col='icao24'):
     """
     For each timestamp in the segment, generate all unique unordered pairs of aircraft.
     Returns a DataFrame with one row per pair (at a given timestamp), containing columns for both aircraft.

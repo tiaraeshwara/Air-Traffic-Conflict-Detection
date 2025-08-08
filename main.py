@@ -1,8 +1,8 @@
 from Source.data_processing.process_and_combine import process_all_and_save
 from Source.data_processing.segment_data import segment_adsb_data
 from Source.data_processing.pair_generate import proceed_pairgeneration
-
 from Source.feature_engineering.feature_engineering import load_and_process_all_pairs
+from Source.label_assignment.label_assignment import label_and_save
 
 import os
 import pandas as pd
@@ -31,5 +31,7 @@ proceed_pairgeneration()
 if __name__ == "__main__":
     INPUT_PAIRS = 'Data/processed_data/pairs/'
     OUTPUT_PATH = 'Data/processed_data/features/features_eng.csv'
+    OUTPUT_LABELED ='Data/processed_data/labeled/labeled_data.csv'
 
     load_and_process_all_pairs(INPUT_PAIRS, OUTPUT_PATH)
+    label_and_save(OUTPUT_PATH, OUTPUT_LABELED)

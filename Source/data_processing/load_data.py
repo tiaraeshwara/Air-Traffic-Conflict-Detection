@@ -17,12 +17,12 @@ def load_single_file(filename):
     file_path = os.path.join(raw_data_dir,filename)
     if not os.path.isfile(file_path):
         raise FileNotFoundError(f"File {filename} not found in {raw_data_dir}")
-
-    df = pd.read_csv(file_path)
-
-    #check expected columns exist or not
-    expected_columns = ['time', 'icao24', 'callsign', 'lat', 'lon',
+    expected_columns = ['time', 'icao24', 'lat', 'lon',
                         'baroaltitude', 'velocity', 'vertrate', 'heading']
+
+    df = pd.read_csv(file_path,usecols=expected_columns)
+
+    #check expected columns
     #groundspeed unavailable velocity available
     missing_cols = [col for col in expected_columns if col not in df.columns]
     if missing_cols:

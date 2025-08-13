@@ -5,7 +5,7 @@ raw_data_dir = os.path.join(os.path.dirname(__file__), "../../Data/raw_data/")
 processed_data_dir = os.path.join(os.path.dirname(__file__), '../../Data/processed_data/')
 output_file = os.path.join(processed_data_dir, "combined_cleaned.csv")
 
-columns_to_keep = ['time', 'icao24', 'callsign', 'lat', 'lon',
+columns_to_keep = ['time', 'icao24', 'lat', 'lon',
                    'baroaltitude', 'velocity', 'vertrate', 'heading']
 
 def clean_and_load_file(file_path):

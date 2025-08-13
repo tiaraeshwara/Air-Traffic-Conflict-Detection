@@ -4,7 +4,7 @@ from sklearn.model_selection import train_test_split
 from sklearn.preprocessing import StandardScaler
 
 
-def prepare_dataset(input_path, output_dir, target_col='SI', test_size=0.3, random_state=42):
+def prepare_dataset(OUTPUT_LABELED, output_dir_ml, target_col='SI', test_size=0.3, random_state=42):
     """
     Load labeled dataset, split into train/test, scale features, and save splits.
 
@@ -19,18 +19,17 @@ def prepare_dataset(input_path, output_dir, target_col='SI', test_size=0.3, rand
         None; saves train/test CSV files and scaler object if needed.
     """
     # Load dataset
-    df = pd.read_csv(input_path)
+    df = pd.read_csv(OUTPUT_LABELED)
     print(f"Loaded dataset with shape: {df.shape}")
 
     # Separate features and label
-    X = df.drop(columns=[target_col])
+    id_cols = ['time', 'A_icao24', 'B_icao24', 'A_callsign', 'B_callsign']
+    raw_state_cols = ['A_lat', 'A_lon', 'B_lat', 'B_lon', 'A_velocity', 'B_velocity',
+        'A_baroaltitude', 'B_baroaltitude','A_heading', 'B_heading', 'A_vertrate', 'B_vertrate', ]
+
+    X = df.drop(columns=id_cols + raw_state_cols + [target_col])
     y = df[target_col]
 
-    # Optionally drop irrelevant columns like IDs or raw timestamps if present
-    # For example, if columns like 'timestamp', 'A_icao24', 'B_icao24' exist and should be excluded:
-    cols_to_drop = [col for col in ['timestamp', 'A_icao24', 'B_icao24', 'A_callsign', 'B_callsign'] if
-                    col in X.columns]
-    X = X.drop(columns=cols_to_drop)
     print(f"Features shape after dropping IDs: {X.shape}")
 
     # Train-test split (stratify on target to keep class balance)
@@ -56,11 +55,11 @@ def prepare_dataset(input_path, output_dir, target_col='SI', test_size=0.3, rand
     test_df[target_col] = y_test.values
 
     # Create output directory if not exist
-    os.makedirs(output_dir, exist_ok=True)
+    os.makedirs(output_dir_ml, exist_ok=True)
 
     # Save datasets
-    train_path = os.path.join(output_dir, 'train_data.csv')
-    test_path = os.path.join(output_dir, 'test_data.csv')
+    train_path = os.path.join(output_dir_ml, 'train_data.csv')
+    test_path = os.path.join(output_dir_ml, 'test_data.csv')
 
     train_df.to_csv(train_path, index=False)
     test_df.to_csv(test_path, index=False)
@@ -75,8 +74,3 @@ def prepare_dataset(input_path, output_dir, target_col='SI', test_size=0.3, rand
     # print(f"Saved scaler to {scaler_path}")
 
 
-if __name__ == "__main__":
-    INPUT_LABELED = '../../data/processed/labeled/labeled_segment_0.csv'  # Adjust as needed
-    OUTPUT_DIR = '../../data/ml_prepared/'
-
-    prepare_dataset(INPUT_LABELED, OUTPUT_DIR)

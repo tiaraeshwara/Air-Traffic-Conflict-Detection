@@ -23,7 +23,7 @@ def prepare_dataset(OUTPUT_LABELED, output_dir_ml, target_col='SI', test_size=0.
     print(f"Loaded dataset with shape: {df.shape}")
 
     # Separate features and label
-    id_cols = ['time', 'A_icao24', 'B_icao24', 'A_callsign', 'B_callsign']
+    id_cols = ['time', 'A_icao24', 'B_icao24']
     raw_state_cols = ['A_lat', 'A_lon', 'B_lat', 'B_lon', 'A_velocity', 'B_velocity',
         'A_baroaltitude', 'B_baroaltitude','A_heading', 'B_heading', 'A_vertrate', 'B_vertrate', ]
 

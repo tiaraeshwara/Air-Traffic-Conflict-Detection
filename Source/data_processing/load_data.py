@@ -20,7 +20,7 @@ def load_single_file(filename):
     expected_columns = ['time', 'icao24', 'lat', 'lon',
                         'baroaltitude', 'velocity', 'vertrate', 'heading']
 
-    df = pd.read_csv(file_path,usecols=expected_columns)
+    df = pd.read_csv(file_path)
 
     #check expected columns
     #groundspeed unavailable velocity available

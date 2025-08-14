@@ -60,37 +60,7 @@ def hyperparameter_tuning(X_train, y_train):
 
     return grid_search.best_estimator_
 
-if __name__ == "__main__":
-    TRAIN_PATH = '../../data/ml_prepared/train_data.csv'
-    TEST_PATH = '../../data/ml_prepared/test_data.csv'
-    MODEL_PATH = '../../models/random_forest_si_model.joblib'
-    TUNED_MODEL_PATH = '../../models/random_forest_si_model_tuned.joblib'
 
-    # Load datasets
-    train_df = pd.read_csv(TRAIN_PATH)
-    test_df = pd.read_csv(TEST_PATH)
 
-    # Separate features and labels
-    X_train = train_df.drop(columns=['SI'])
-    y_train = train_df['SI']
 
-    X_test = test_df.drop(columns=['SI'])
-    y_test = test_df['SI']
 
-    # Load trained model
-    if not os.path.exists(MODEL_PATH):
-        raise FileNotFoundError(f"Trained model not found at {MODEL_PATH}")
-    model = joblib.load(MODEL_PATH)
-
-    # Evaluate the loaded model
-    evaluate_model(model, X_test, y_test)
-
-    # Optional: Perform hyperparameter tuning and save new model
-    do_tuning = False  # Change to True to enable tuning
-    if do_tuning:
-        best_model = hyperparameter_tuning(X_train, y_train)
-        joblib.dump(best_model, TUNED_MODEL_PATH)
-        print(f"Tuned model saved at {TUNED_MODEL_PATH}")
-
-        # Evaluate tuned model
-        evaluate_model(best_model, X_test, y_test)
